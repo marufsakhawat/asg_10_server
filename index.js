@@ -1,39 +1,37 @@
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const port = 3000;
-
 
 const app = express();
+const port = process.env.PORT || 5000;
+
 app.use(cors());
+app.use(express.json());
 
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.piltxgj.mongodb.net/?appName=Cluster0`;
 
-const uri = "mongodb+srv://db_asg_10:QdBbhOFqoSe0RW8I@cluster0.piltxgj.mongodb.net/?appName=Cluster0";
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
-  try {
+  await client.connect();
+  console.log("You successfully connected to MongoDB!");
 
-    await client.connect();
-    
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    
-    // await client.close();  // default but I make it commented
-  }
-}
+  const database = client.db("pawMartDB");
+  const listingsCollection = database.collection("listings");
+  const ordersCollection = database.collection("orders");
 
- // HomePage er Jonno 6 Listing limit Set Kora
+  app.get("/", (req, res) => {
+    res.send("PawMart Server is running fine!");
+  });
+
+  // HomePage er Jonno 6 Listing limit Set Kora
   app.get("/listings-recent", async (req, res) => {
     const result = await listingsCollection
       .find()
@@ -68,24 +66,67 @@ async function run() {
   });
 
   // Database e Order Save Kora
-
   app.post("/orders", async (req, res) => {
     const newOrder = req.body;
     const result = await ordersCollection.insertOne(newOrder);
     res.send(result);
   });
 
+  // Get all listings post by specific user (email)
 
+  app.get("/my-listings/:email", async (req, res) => {
+    const email = req.params.email;
+    const query = { email: email };
+    const result = await listingsCollection.find(query).toArray();
+    res.send(result);
+  });
 
+  // Delete listing by ID
 
+  app.delete("/listing/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await listingsCollection.deleteOne(query);
+    res.send(result);
+  });
 
+  // Update listing by ID
 
+  app.put("/listing/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const updatedListing = req.body;
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: {
+        name: updatedListing.name,
+        category: updatedListing.category,
+        price: parseFloat(updatedListing.price),
+        location: updatedListing.location,
+        description: updatedListing.description,
+        image: updatedListing.image,
+        date: updatedListing.date,
+      },
+    };
+    const result = await listingsCollection.updateOne(
+      query,
+      updateDoc,
+      options
+    );
+    res.send(result);
+  });
+
+  // Get all orders by specific user (email)
+
+  app.get("/my-orders/:email", async (req, res) => {
+    const email = req.params.email;
+    const query = { email: email };
+    const result = await ordersCollection.find(query).toArray();
+    res.send(result);
+  });
+
+  app.listen(port, () => {
+    console.log(`PawMart server is sitting on port ${port}`);
+  });
+}
 run().catch(console.dir);
-
-app.get('/', (req, res)=>{
-    res.send(`Hello from asg_10`)
-})
-
-app.listen(port, ()=>{
-    console.log(`asg_10_server is running on ${port}`)
-})
