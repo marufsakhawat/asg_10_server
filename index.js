@@ -12,7 +12,7 @@ app.use(express.json());
 // MongoDB connection URI
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.piltxgj.mongodb.net/?appName=Cluster0`;
 
-// MongoDB client
+// MongoDB client 
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -31,7 +31,7 @@ async function run() {
 
   // Root route — server health check
   app.get("/", (req, res) => {
-    res.send("PawMart Server is running fine!");
+    res.send("Server is running fine!");
   });
 
   // Get latest 6 listings
@@ -123,7 +123,7 @@ async function run() {
 
   // Start server
   app.listen(port, () => {
-    console.log(`PawMart server running on port ${port}`);
+    console.log(`Server running on port ${port}`);
   });
 }
 
