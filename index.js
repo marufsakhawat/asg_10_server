@@ -21,6 +21,7 @@ const client = new MongoClient(uri, {
   },
 });
 
+
 async function run() {
   await client.connect();
   console.log("Connected to MongoDB");
@@ -56,7 +57,7 @@ async function run() {
     const result = await listingsCollection.find().toArray();
     res.send(result);
   });
-
+ 
   // Get a single listing by ID
   app.get("/listing/:id", async (req, res) => {
     const id = req.params.id;
@@ -98,7 +99,7 @@ async function run() {
       $set: {
         name: updatedListing.name,
         category: updatedListing.category,
-        price: parseFloat(updatedListing.price),
+        price: parseFloat(updatedListing.price), 
         location: updatedListing.location,
         description: updatedListing.description,
         image: updatedListing.image,
