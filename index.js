@@ -23,7 +23,7 @@ const client = new MongoClient(uri, {
 
 
 async function run() {
-  await client.connect();
+  // await client.connect();
   console.log("Connected to MongoDB");
 
   const db = client.db("pawMartDB");
